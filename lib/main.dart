@@ -56,11 +56,20 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  GlobalKey<ScaffoldState> _key = GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context) {
     final counterProvider = Provider.of<CounterProvider>(context);
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
+      key: _key,
       appBar: AppBar(
+        leading: IconButton(
+          onPressed: () {
+            _key.currentState?.openDrawer();
+          },
+          icon: Icon(Icons.menu),
+        ),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
         actions: [
@@ -78,13 +87,42 @@ class _MyHomePageState extends State<MyHomePage> {
             padding: EdgeInsets.all(12),
             child: IconButton(
                 onPressed: counterProvider.reset, icon: Icon(Icons.restore)),
-          )
+          ),
         ],
+      ),
+      drawer: Drawer(
+        child: Container(
+          color: Colors.blue,
+          child: Column(
+            children: [
+              IconButton(
+                  onPressed: () {
+                    _key.currentState?.closeDrawer();
+                  },
+                  icon: Icon(Icons.delete_forever))
+            ],
+          ),
+        ),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            Switch(
+              value: themeProvider.mode == ThemeMode.dark,
+              onChanged: (newVal) {
+                themeProvider.changeThemeMode(newVal);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text("theme changed"),
+                    backgroundColor: Colors.orange,
+                    duration: Duration(seconds: 2),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20)),
+                  ),
+                );
+              },
+            ),
             const Text(
               'You have pushed the button this many times:',
             ),
@@ -99,7 +137,7 @@ class _MyHomePageState extends State<MyHomePage> {
         onPressed: counterProvider.increment,
         tooltip: 'Increment',
         child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ),
     );
   }
 }
